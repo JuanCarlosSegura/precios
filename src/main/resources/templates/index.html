@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Stream de Clima Real</title>
+    <script src="https://tailwindcss.com"></script>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-6">
+    <div class="max-w-md mx-auto mt-10">
+        <h1 class="text-2xl font-black text-sky-400 mb-2">⛅ Sevilla Weather Stream (API Real)</h1>
+        <p class="text-xs text-gray-400 mb-6">Peticiones HTTPS Externas -> Apache Kafka -> WebSockets</p>
+        
+        <div id="weather-card" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
+            <div id="status" class="text-center text-gray-500 py-4">
+                Esperando primera ráfaga de datos reales desde Kafka...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var socket = new SockJS('/ws-gasolineras');
+        var stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, function () {
+            stompClient.subscribe('/topic/sevilla', function (response) {
+                var data = JSON.parse(response.body);
+                var card = document.getElementById("weather-card");
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                        <h2 class="text-xl font-bold text-gray-100">${data.ciudad}</h2>
+                        <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded font-mono">En Vivo</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-center pt-2">
+                        <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                            <span class="text-xs text-gray-400 block mb-1">Temperatura</span>
+                            <span class="text-2xl font-black text-amber-400 font-mono">${data.temperatura} °C</span>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                            <span class="text-xs text-gray-400 block mb-1">Humedad</span>
+                            <span class="text-2xl font-black text-emerald-400 font-mono">${data.humedad} %</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-center font-mono pt-2">
+                        Última lectura API: ${data.hora}
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
+
