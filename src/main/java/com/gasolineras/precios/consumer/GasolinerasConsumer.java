@@ -14,19 +14,20 @@ public class GasolinerasConsumer {
 
     @KafkaListener(topics = "gasolineras-stream", groupId = "sevilla-group")
     public void procesarClima(String mensaje) {
-        JSONObject apiJson = new JSONObject(mensaje);
-        
-        // Extraemos los datos del nodo "current" que devuelve la API real
-        JSONObject current = apiJson.getJSONObject("current");
-        
-        JSONObject datosFiltrados = new JSONObject();
-        datosFiltrados.put("ciudad", "Sevilla");
-        datosFiltrados.put("temperatura", current.getDouble("temperature_2m"));
-        datosFiltrados.put("humedad", current.getInt("relative_humidity_2m"));
-        datosFiltrados.put("viento", current.getDouble("wind_speed_10m"));
-        datosFiltrados.put("hora", current.getString("time"));
+        try {
+            JSONObject apiJson = new JSONObject(mensaje);
+            JSONObject current = apiJson.getJSONObject("current");
 
-        // Enviamos al Frontend mediante WebSockets
-        messagingTemplate.convertAndSend("/topic/sevilla", datosFiltrados.toString());
+            JSONObject datosFiltrados = new JSONObject();
+            datosFiltrados.put("ciudad", "Sevilla");
+            datosFiltrados.put("temperatura", current.getDouble("temperature_2m"));
+            datosFiltrados.put("humedad", current.getInt("relative_humidity_2m"));
+            datosFiltrados.put("viento", current.getDouble("wind_speed_10m"));
+            datosFiltrados.put("hora", current.getString("time"));
+
+            messagingTemplate.convertAndSend("/topic/sevilla", datosFiltrados.toString());
+        } catch (Exception e) {
+            System.err.println("Mensaje Kafka ignorado por formato inválido: " + e.getMessage());
+        }
     }
 }

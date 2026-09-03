@@ -19,8 +19,8 @@ public class GasolinerasProducer {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    // API real y abierta de Open-Meteo consultando las coordenadas exactas de Sevilla
-    private static final String API_URL = "https://open-meteo.com";
+    // Endpoint JSON de Open-Meteo para las coordenadas de Sevilla
+    private static final String API_URL = "https://api.open-meteo.com/v1/forecast?latitude=37.3891&longitude=-5.9845&current=temperature_2m,relative_humidity_2m,wind_speed_10m";
 
     // Se ejecuta cada 10 segundos llamando a la API en vivo
     @Scheduled(fixedRate = 10000)
